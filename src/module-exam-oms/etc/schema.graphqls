@@ -14,14 +14,12 @@ input ProductFilterInput {
     name: FilterTypeInput @doc(description: "product name")
     sku: FilterTypeInput @doc(description: "sku product")
     status: FilterTypeInput @doc(description: "product status")
-    type_id: FilterTypeInput @doc(description: "product type")
 }
 
 input ProductSortInput {
     entity_id: SortEnum @doc(description: "entity id product")
     name: SortEnum @doc(description: "product name")
     sku: SortEnum @doc(description: "sku product")
-    type_id: SortEnum @doc(description: "product type")
 }
 
 type ProductList {
@@ -34,11 +32,11 @@ type ProductOutput {
     entity_id: Int @doc(description: "entity id product")
     name: String @doc(description: "product name")
     sku: String @doc(description: "sku product")
-    price: String @doc(description: "product price")
+    price: Int @doc(description: "product price")
     status: StatusOutput @doc(description: "product status")
     description: String @doc(description: "product description")
     sort_description: String @doc(description: "product sort description")
-    weight: String @doc(description: "product weigth")
+    weight: Int @doc(description: "product weigth")
     dimension_package_height: Int @doc(description: "product dimension package heigth")
     dimension_package_length: Int @doc(description: "product dimension package length")
     dimension_package_width: Int @doc(description: "product dimension package width")
