@@ -8,7 +8,7 @@ git checkout exam-oms
 composer config repositories.exam-oms-anan git git@github.com:dediananto/exam-oms-anan-01.git
 
 
-composer require dediananto/exam-oms-anan-01:exam-oms (for dev and local using branch develop)
+composer require dediananto/exam-oms-anan-01:dev-exam-oms (for dev and local using branch develop)
 
 
 fulldeploy
