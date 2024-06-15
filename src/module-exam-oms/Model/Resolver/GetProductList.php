@@ -14,8 +14,10 @@ use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\GraphQl\Exception\GraphQlNoSuchEntityException;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
+use Swiftoms\Company\Api\CompanyRepositoryInterface;
 use Swiftoms\General\Helper\GraphQlSearchCriteria;
 use Swiftoms\Product\Model\ProductRepository;
+use Magento\Catalog\Model\Product\Type;
 
 class GetProductList implements ResolverInterface
 {
@@ -35,14 +37,25 @@ class GetProductList implements ResolverInterface
     protected $customerRepository;
 
     /**
+     * @var CompanyRepositoryInterface
+     */
+    protected $companyRepository;
+
+    /**
      * @var GraphQlSearchCriteria
      */
     protected $searchCriteriaHelper;
 
     /**
+     * @var Type
+     */
+    protected $type;
+
+    /**
      * @param ProductRepository $productRepository
      * @param PricingHelper $priceHelper
      * @param CustomerRepositoryInterface $customerRepository
+     * @param CompanyRepositoryInterface $companyRepository
      * @param GraphQlSearchCriteria $searchCriteriaHelper
      * @param Type $type
      */
@@ -50,12 +63,16 @@ class GetProductList implements ResolverInterface
         ProductRepository $productRepository,
         PricingHelper $priceHelper,
         CustomerRepositoryInterface $customerRepository,
-        GraphQlSearchCriteria $searchCriteriaHelper
+        CompanyRepositoryInterface $companyRepository,
+        GraphQlSearchCriteria $searchCriteriaHelper,
+        Type $type
     ) {
         $this->productRepository = $productRepository;
         $this->priceHelper = $priceHelper;
         $this->customerRepository = $customerRepository;
+        $this->companyRepository = $companyRepository;
         $this->searchCriteriaHelper = $searchCriteriaHelper;
+        $this->type = $type;
     }
 
     /**
@@ -89,11 +106,22 @@ class GetProductList implements ResolverInterface
             throw new GraphQlNoSuchEntityException(__($e->getMessage()));
         }
 
+        /* Check if user is a vendor or not. Auto filter product by vendor_id if user is a vendor */
+        $customerCompanyId = (!empty($customer->getCustomAttribute('customer_company_code'))) ? $customer->getCustomAttribute('customer_company_code')->getValue() : '';
+        if (!empty($customerCompanyId)) {
+            try {
+                $company = $this->companyRepository->get($customerCompanyId);
+                $args['filter']['vendor_id'] = ['eq' => $company->getCompanyCode()];
+            } catch (NoSuchEntityException $e) {
+                throw new GraphQlNoSuchEntityException(__("you assigned with company id %1, but the company doesn't exist", $customerCompanyId));
+            }
+        }
+
         $searchCriteria = $this->searchCriteriaHelper->build($args);
         $searchResult = $this->productRepository->getList($searchCriteria);
 
         $items = [];
-        foreach ($searchResult->getItems() as $item) {
+        foreach ($searchResult->getItems() as $key => $item) {
             $status = [];
             switch ($item->getStatus()) {
                 case 1:
@@ -112,13 +140,13 @@ class GetProductList implements ResolverInterface
                 'name' => $item->getName(),
                 'sku' => $item->getSku(),
                 'price' => $this->priceHelper->currency($item->getPrice(), true, false),
+                'status' => $status['label'],
                 'description' => $item->getDescription(),
-                'sort_description' => $item->getSortDescription(),
-                'status' => $status,
+                'short_description' => $item->getShortDescription(),
                 'weight' => $item->getWeight(),
-                'dimension_package_height' => $item->getDimensionPackageHeight(),
-                'dimension_package_length' => $item->getDimensionPackageLength(),
-                'dimension_package_width' => $item->getDimensionPackageWidth()
+                'dimension_package_height' => $item->getTsDimensionsHeight(),
+                'dimension_package_length' => $item->getTsDimensionsLength(),
+                'dimension_package_width' => $item->getTsDimensionsWidth()
             ];
 
             $items[] = $_item;
