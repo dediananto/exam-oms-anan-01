@@ -144,9 +144,9 @@ class GetProductList implements ResolverInterface
                 'description' => $item->getDescription(),
                 'short_description' => $item->getShortDescription(),
                 'weight' => $item->getWeight(),
-                'dimension_package_height' => $item->getTsDimensionsHeight(),
-                'dimension_package_length' => $item->getTsDimensionsLength(),
-                'dimension_package_width' => $item->getTsDimensionsWidth()
+                'dimension_package_height' => $item->getDimensionPackageHeight(),
+                'dimension_package_length' => $item->getDimensionPackageLength(),
+                'dimension_package_width' => $item->getDimensionPackageWidth()
             ];
 
             $items[] = $_item;
