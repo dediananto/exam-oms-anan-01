@@ -116,7 +116,7 @@ class GetProductList implements ResolverInterface
                 throw new GraphQlNoSuchEntityException(__("you assigned with company id %1, but the company doesn't exist", $customerCompanyId));
             }
         }
-
+        $this->searchCriteriaHelper->setColumns(['name', 'description', 'sku']);
         $searchCriteria = $this->searchCriteriaHelper->build($args);
         $searchResult = $this->productRepository->getList($searchCriteria);
 
